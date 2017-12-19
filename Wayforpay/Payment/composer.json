@@ -1,0 +1,45 @@
+{
+  "name": "wayforpay/magento2",
+  "description": "Wayforpay Magento 2 payment module",
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "authors": [
+      {
+          "name": "Wayforpay",
+          "email": "support@wayforpay.com",
+          "homepage": "https://wayforpay.com"
+      }
+  ],
+  "keywords": [
+      "magento2_module",
+      "magento2_payment_module",
+      "payment_gateway",
+      "magento2_payment_gateway",
+      "payment_processing",
+      "magento2_payment_processing",
+      "e-commerce",
+      "visa",
+      "mastercard",
+      "debit_card",
+      "credit_card",
+      "authorize",
+      "capture",
+      "recurring",
+      "refund",
+      "3d-secure",
+      "fraud"
+  ],
+  "require": {
+    "php": "~5.6.0|~7.0.0"
+  },
+  "autoload": {
+    "files": [ "registration.php" ],
+    "psr-4": {
+      "Wayforpay\\Payment\\": ""
+    }
+  }
+}

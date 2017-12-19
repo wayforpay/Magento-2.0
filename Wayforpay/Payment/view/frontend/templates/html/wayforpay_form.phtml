@@ -1,0 +1,12 @@
+<form action="<?php echo $block->getGateUrl(); ?>" method="POST" id="wayforpay_payment_form" style="display: none">
+	<?php $data = $this->getPostData(); ?>
+    <?php if (!empty($data)): ?>
+		<?php echo $data ?>
+	<?php endif; ?>
+</form>
+<script type="text/javascript">
+	require(["jquery"], function ($)
+	{
+		$('#wayforpay_payment_form').submit();
+	});
+</script>

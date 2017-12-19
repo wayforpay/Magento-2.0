@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="wayforpay" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Wayforpay</label>
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <depends><field id='active'>1</field></depends>
+                </field>
+                <field id='merchant' showInDefault='1' showInStore='1' showInWebsite='1'
+                       sortOrder='3' translate='label' type='text'>
+                    <label>Merchant</label>
+                    <depends><field id='active'>1</field></depends>
+                    <validate>required-entry</validate>
+                </field>
+                <field id='secret_key' showInDefault='1' showInStore='1' showInWebsite='1'
+                       sortOrder='4' translate='label' type='text'>
+                    <label>Secret key</label>
+                    <depends><field id='active'>1</field></depends>
+                    <validate>required-entry</validate>
+                </field>
+                <field id='request_url' showInDefault='1' showInStore='1' showInWebsite='1'
+                       sortOrder='5' translate='label' type='text'>
+                    <label>Request URL</label>
+                    <depends><field id='active'>1</field></depends>
+                    <comment>Адрес отправки запроса (по умолчанию: https://secure.wayforpay.com/pay)</comment>
+                </field>
+                <field id='order_status' showInDefault='1' showInStore='1' showInWebsite='1'
+                       sortOrder='8' translate='label' type='select'>
+                    <label>New order status</label>
+                    <depends><field id='active'>1</field></depends>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                </field>
+                <field id="allowed_carrier" translate="label" type="multiselect"
+                       sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Allowed Shipping Methods</label>
+                    <depends><field id='active'>1</field></depends>
+                    <source_model>Magento\Shipping\Model\Config\Source\Allmethods</source_model>
+                </field>
+                <field id="sort_order" translate="label" type="text"
+                       sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sort Order</label>
+                    <depends><field id='active'>1</field></depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <wayforpay>
+                <active>1</active>
+                <model>Wayforpay\Payment\Model\Wayforpay</model>
+                <title>Wayforpay</title>
+                <merchant>test_merch_n1</merchant>
+                <secret_key>flk3409refn54t54t*FNJRET</secret_key>
+                <request_url>https://secure.wayforpay.com/pay</request_url>
+                <order_status>pending_payment</order_status>
+                <sort_order>100</sort_order>
+                <payment_action>https://secure.wayforpay.com/pay</payment_action>
+                <allowspecific>0</allowspecific>
+            </wayforpay>
+        </payment>
+    </default>
+</config>
