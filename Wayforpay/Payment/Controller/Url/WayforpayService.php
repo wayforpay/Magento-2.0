@@ -33,14 +33,14 @@ class WayforpayService extends Action
 		$paymentMethod = $this->_objectManager->create('Wayforpay\Payment\Model\Wayforpay');
 
 		//get request data
-		$data = $this->getRequest()->getPostValue();
-		if (empty($data)) {
-			$callback = json_decode(file_get_contents("php://input"));
-			$data = array();
-			foreach ($callback as $key => $val) {
-				$data[$key] = $val;
-			}
-		}
+		$data = json_decode(file_get_contents("php://input"), true);
+//		if (empty($data)) {
+//			$callback = json_decode(file_get_contents("php://input"));
+//			$data = array();
+//			foreach ($callback as $key => $val) {
+//				$data[$key] = $val;
+//			}
+//		}
 
 		$paymentMethod->processResponse($data);
 //		return $this->resultPageFactory->create();
