@@ -5,132 +5,166 @@ namespace Wayforpay\Payment\Block\Widget;
 /**
  * Abstract class for Cash On Delivery and Bank Transfer payment method form
  */
-use \Magento\Framework\View\Element\Template;
 
+use Magento\Customer\Model\Session;
+use Magento\Framework\App\Http\Context;
+use Magento\Framework\View\Element\Template;
+use Magento\Sales\Model\Order\Config;
+use Magento\Sales\Model\OrderFactory;
+use Wayforpay\Payment\Model\Wayforpay;
 
-class Redirect extends Template {
-	/**
-	 * @var \Wayforpay\Payment\Model\Wayforpay
-	 */
-	protected $Config;
+class Redirect extends Template
+{
+    /**
+     * @var Wayforpay
+     */
+    protected $Config;
 
-	/**
-	 * @var \Magento\Checkout\Model\Session
-	 */
-	protected $_checkoutSession;
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    protected $_checkoutSession;
 
-	/**
-	 * @var \Magento\Customer\Model\Session
-	 */
-	protected $_customerSession;
+    /**
+     * @var Session
+     */
+    protected $_customerSession;
 
-	/**
-	 * @var \Magento\Sales\Model\OrderFactory
-	 */
-	protected $_orderFactory;
+    /**
+     * @var OrderFactory
+     */
+    protected $_orderFactory;
 
-	/**
-	 * @var \Magento\Sales\Model\Order\Config
-	 */
-	protected $_orderConfig;
+    /**
+     * @var Config
+     */
+    protected $_orderConfig;
 
-	/**
-	 * @var \Magento\Framework\App\Http\Context
-	 */
-	protected $httpContext;
+    /**
+     * @var Context
+     */
+    protected $httpContext;
 
-	/**
-	 * @var string
-	 */
-	protected $_template = 'html/wyforpay_form.phtml';
+    /**
+     * @var string
+     */
+    protected $_template = 'html/wyforpay_form.phtml';
 
+    /**
+     * @param Template\Context                $context
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param Session                         $customerSession
+     * @param OrderFactory                    $orderFactory
+     * @param Config                          $orderConfig
+     * @param Context                         $httpContext
+     * @param Wayforpay                       $paymentConfig
+     * @param array                           $data
+     */
+    public function __construct(
+        Template\Context $context,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        Session $customerSession,
+        OrderFactory $orderFactory,
+        Config $orderConfig,
+        Context $httpContext,
+        Wayforpay $paymentConfig,
+        array $data = []
+    )
+    {
+        parent::__construct($context, $data);
+        $this->_checkoutSession = $checkoutSession;
+        $this->_customerSession = $customerSession;
+        $this->_orderFactory    = $orderFactory;
+        $this->_orderConfig     = $orderConfig;
+        $this->_isScopePrivate  = true;
+        $this->httpContext      = $httpContext;
+        $this->Config           = $paymentConfig;
+    }
 
-	/**
-	 * @param Template\Context $context
-	 * @param \Magento\Checkout\Model\Session $checkoutSession
-	 * @param \Magento\Customer\Model\Session $customerSession
-	 * @param \Magento\Sales\Model\OrderFactory $orderFactory
-	 * @param \Magento\Sales\Model\Order\Config $orderConfig
-	 * @param \Magento\Framework\App\Http\Context $httpContext
-	 * @param \Wayforpay\Payment\Model\Wayforpay $paymentConfig
-	 * @param array $data
-	 */
-	public function __construct(
-		\Magento\Framework\View\Element\Template\Context $context,
-		\Magento\Checkout\Model\Session $checkoutSession,
-		\Magento\Customer\Model\Session $customerSession,
-		\Magento\Sales\Model\OrderFactory $orderFactory,
-		\Magento\Sales\Model\Order\Config $orderConfig,
-		\Magento\Framework\App\Http\Context $httpContext,
-		\Wayforpay\Payment\Model\Wayforpay $paymentConfig,
-		array $data = []
-	) {
-		parent::__construct($context, $data);
-		$this->_checkoutSession = $checkoutSession;
-		$this->_customerSession = $customerSession;
-		$this->_orderFactory    = $orderFactory;
-		$this->_orderConfig     = $orderConfig;
-		$this->_isScopePrivate  = true;
-		$this->httpContext      = $httpContext;
-		$this->Config           = $paymentConfig;
-	}
+    /**
+     * Get instructions text from config
+     *
+     * @return null|string
+     */
+    public function getGateUrl()
+    {
+        return $this->Config->getGateUrl();
+    }
 
+    /**
+     * Получить сумму к оплате
+     *
+     * @return float|null
+     */
+    public function getAmount()
+    {
+        $orderId = $this->_checkoutSession->getLastOrderId();
+        if ($orderId) {
+            $incrementId = $this->_checkoutSession->getLastRealOrderId();
 
-	/**
-	 * Get instructions text from config
-	 *
-	 * @return null|string
-	 */
-	public function getGateUrl() {
-		//print_r ($this->Config->getGateUrl()); die;
-		return $this->Config->getGateUrl();
-	}
+            return $this->Config->getAmount($incrementId);
+        }
 
+        return null;
+    }
 
-	/**
-	 * Получить сумму к оплате
-	 *
-	 * @return float|null
-	 */
-	public function getAmount() {
-		$orderId = $this->_checkoutSession->getLastOrderId();
-		if ($orderId) {
-			$incrementId = $this->_checkoutSession->getLastRealOrderId();
+    /**
+     * Получить данные формы
+     *
+     * @return array|null
+     */
+    public function getPostData()
+    {
+        $orderId = $this->_checkoutSession->getLastOrderId();
+        if ($orderId) {
+            $incrementId = $this->_checkoutSession->getLastRealOrderId();
+            $fields      = $this->Config->getPostData($incrementId);
+            return $this->Config->getFormFields($fields);
+        }
 
-			return $this->Config->getAmount($incrementId);
-		}
+        return null;
+    }
 
-		return null;
-	}
+    /**
+     * Получить Pay URL
+     *
+     * @return string
+     */
+    public function getPayUrl()
+    {
+        $baseUrl = $this->getUrl("wayforpay/url");
 
+        //print_R ($baseUrl);die;
+        return "{$baseUrl}wayforpaysuccess";
+    }
 
-	/**
-	 * Получить данные формы
-	 *
-	 * @return array|null
-	 */
-	public function getPostData() {
-		$orderId = $this->_checkoutSession->getLastOrderId();
-		if ($orderId) {
-			$incrementId = $this->_checkoutSession->getLastRealOrderId();
-			$fields = $this->Config->getPostData($incrementId);
-			return $this->Config->getFormFields($fields);
-		}
+    /**
+     * @return \Magento\Sales\Model\Order|null
+     */
+    public function getLastOrder()
+    {
+        $orderId  = $this->_checkoutSession->getLastOrderId();
+        $order    = $this->_orderFactory->create();
+        $resource = $order->getResource()->load($order, $orderId);
 
-		return null;
-	}
+        return $order;
+    }
 
-
-	/**
-	 * Получить Pay URL
-	 *
-	 * @return array
-	 */
-	public function getPayUrl() {
-
-		$baseUrl = $this->getUrl("wayforpay/url");
-
-		//print_R ($baseUrl);die;
-		return "{$baseUrl}wayforpaysuccess";
-	}
+    /**
+     * @param string $template
+     * @return Template
+     */
+    public function setTemplate($template)
+    {
+        if ($order = $this->getLastOrder()) {
+            if ($payment = $order->getPayment()) {
+                if ($method = $payment->getMethodInstance()) {
+                    if ($method->getCode() == \Wayforpay\Payment\Model\Wayforpay::METHOD_CODE) {
+                        return parent::setTemplate($template);
+                    }
+                }
+            }
+        }
+        return parent::setTemplate('');
+    }
 }

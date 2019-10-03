@@ -1,5 +1,5 @@
 <form action="<?php echo $block->getGateUrl(); ?>" method="POST" id="wayforpay_payment_form" style="display: none">
-	<?php $data = $this->getPostData(); ?>
+	<?php $data = $block->getPostData(); ?>
     <?php if (!empty($data)): ?>
 		<?php echo $data ?>
 	<?php endif; ?>

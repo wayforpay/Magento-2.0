@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-	<update handle="empty"/>
-	<referenceContainer name="page.wrapper">
-		<block class="Wayforpay\Payment\Block\Widget\Redirect" template="Wayforpay_Payment::html/wayforpay_form.phtml" />
+	<referenceContainer name="order.success.additional.info">
+		<block class="Wayforpay\Payment\Block\Widget\Redirect" name="onepage.success.wayforpay" template="Wayforpay_Payment::html/wayforpay_form.phtml" />
 	</referenceContainer>
 </page>

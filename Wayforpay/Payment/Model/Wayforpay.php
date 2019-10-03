@@ -3,8 +3,8 @@
 namespace Wayforpay\Payment\Model;
 
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment\Transaction;
 
 /**
  * Class Wayforpay
@@ -19,7 +19,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     const ORDER_SEPARATOR = '#';
 
     /** @var array */
-    protected $keysForResponseSignature = array(
+    protected $keysForResponseSignature = [
         'merchantAccount',
         'orderReference',
         'amount',
@@ -28,10 +28,10 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         'cardPan',
         'transactionStatus',
         'reasonCode'
-    );
+    ];
 
     /** @var array */
-    protected $keysForSignature = array(
+    protected $keysForSignature = [
         'merchantAccount',
         'merchantDomainName',
         'orderReference',
@@ -41,7 +41,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         'productName',
         'productCount',
         'productPrice'
-    );
+    ];
 
     /**
      * @var bool
@@ -116,7 +116,8 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         $this->urlBuilder = $urlBuilder;
         $this->_transactionBuilder = $builderInterface;
         $this->_encryptor = $encryptor;
-        parent::__construct($context,
+        parent::__construct(
+            $context,
             $registry,
             $extensionFactory,
             $customAttributeFactory,
@@ -125,24 +126,23 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
             $logger,
             $resource,
             $resourceCollection,
-            $data);
+            $data
+        );
         $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/wayforpay.log');
         $this->_logger = new \Zend\Log\Logger();
         $this->_logger->addWriter($writer);
         $this->_gateUrl = 'https://secure.wayforpay.com/pay';
     }
 
-
     /**
      *
      * @param $orderId
      * @return Order
      */
-    protected function getOrder($orderId)
+    public function getOrder($orderId)
     {
         return $this->orderFactory->create()->loadByIncrementId($orderId);
     }
-
 
     /**
      *
@@ -156,7 +156,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
 
     public function getSignature($option, $keys)
     {
-        $hash = array();
+        $hash = [];
         foreach ($keys as $dataKey) {
             if (!isset($option[$dataKey])) {
                 continue;
@@ -199,7 +199,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         return $this->getOrder($orderId)->getCustomerId();
     }
 
-
     /**
      *
      * @param $orderId
@@ -209,7 +208,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     {
         return $this->getOrder($orderId)->getBaseCurrencyCode();
     }
-
 
     /**
      *
@@ -224,7 +222,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         $stateObject->setIsNotified(false);
     }
 
-
     /**
      *
      * @param string $shippingMethod
@@ -234,7 +231,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     {
         return strpos($this->getConfigData('allowed_carrier'), $shippingMethod) !== false;
     }
-
 
     /**
      *
@@ -247,10 +243,9 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
             return false;
         }
         return parent::isAvailable($quote) && $this->isCarrierAllowed(
-                $quote->getShippingAddress()->getShippingMethod()
+            $quote->getShippingAddress()->getShippingMethod()
             );
     }
-
 
     /**
      *
@@ -261,7 +256,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         return $this->getConfigData('request_url') ? $this->getConfigData('request_url') : $this->_gateUrl;
     }
 
-
     /**
      *
      * @return mixed
@@ -270,7 +264,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     {
         return $this->_encryptor->decrypt($this->getConfigData('secret_key'));
     }
-
 
     /**
      *
@@ -282,7 +275,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         $order = $this->getOrder($orderId);
         $amount = $this->getAmount($orderId);
 
-        $fields = array(
+        $fields = [
             'merchantAccount'               => $this->getConfigData('merchant'),
             'orderReference'                => $orderId . self::ORDER_SEPARATOR . time(),
             'orderDate'                     => strtotime($order->getCreatedAt()),
@@ -295,13 +288,13 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
             'serviceUrl'                    => $this->urlBuilder->getUrl('wayforpay/url/wayforpayservice'),
             'returnUrl'                     => $this->urlBuilder->getUrl('wayforpay/url/wayforpaysuccess'),
             'language'                      => $this->getConfigData('language'),
-        );
+        ];
 
         $cartItems = $order->getAllVisibleItems();
 
-        $productNames = array();
-        $productQty = array();
-        $productPrices = array();
+        $productNames = [];
+        $productQty = [];
+        $productPrices = [];
         foreach ($cartItems as $_item) {
             $productNames[] = $_item->getName();
             $productPrices[] = round($_item->getPrice(), 2);
@@ -314,7 +307,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         /**
          * Check phone
          */
-        $phone = str_replace(array('+', ' ', '(', ')'), array('', '', '', ''), $order->getBillingAddress()->getTelephone());
+        $phone = str_replace(['+', ' ', '(', ')'], ['', '', '', ''], $order->getBillingAddress()->getTelephone());
         if (strlen($phone) == 10) {
             $phone = '38' . $phone;
         } elseif (strlen($phone) == 11) {
@@ -355,7 +348,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     {
         if (empty($responseData)) {
             $callback = json_decode(file_get_contents("php://input"));
-            $responseData = array();
+            $responseData = [];
             foreach ($callback as $key => $val) {
                 $responseData[$key] = $val;
             }
@@ -363,7 +356,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         $debugData = ['response' => $responseData];
         $this->_logger->debug("processResponse", $debugData);
 
-        list($orderId,) = explode(self::ORDER_SEPARATOR, $responseData['orderReference']);
+        list($orderId, ) = explode(self::ORDER_SEPARATOR, $responseData['orderReference']);
         $order = $this->getOrder($orderId);
         if ($order && ($this->_processOrder($order, $responseData) === true)) {
             return true;
@@ -379,11 +372,13 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected function _processOrder(Order $order, $response)
     {
-        $this->_logger->debug("_processWayforpay",
+        $this->_logger->debug(
+            "_processWayforpay",
             [
                 "\$order"    => $order,
                 "\$response" => $response
-            ]);
+            ]
+        );
         try {
             if ($order->getGrandTotal() != $response["amount"]) {
                 $this->_logger->debug("_processOrder: amount mismatch, order FAILED");
@@ -399,7 +394,6 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
                 $this->sendAnswerToGateway($response['orderReference']);
                 $this->_logger->debug("_processOrder: order state changed: STATE_PROCESSING");
                 $this->_logger->debug("_processOrder: order data saved, order OK");
-
             } else {
                 $order
                     ->setState(Order::STATE_CANCELED)
@@ -433,7 +427,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         return true;
     }
 
-    public function createTransaction($order = null, $paymentData = array())
+    public function createTransaction($order = null, $paymentData = [])
     {
         try {
             //get payment object from order object
