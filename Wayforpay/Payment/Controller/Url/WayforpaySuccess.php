@@ -4,21 +4,25 @@ namespace Wayforpay\Payment\Controller\Url;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Sales\Model\Order;
+use Magento\Framework\View\Result\PageFactory;
 
+/**
+ * Class WayforpaySuccess
+ *
+ * @package Wayforpay\Payment\Controller\Url
+ */
 class WayforpaySuccess extends Action
 {
-    /** @var \Magento\Framework\View\Result\PageFactory  */
+    /** @var PageFactory  */
     protected $resultPageFactory;
 
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
+        Context $context,
+        PageFactory $resultPageFactory
     ) {
         $this->resultPageFactory = $resultPageFactory;
         parent::__construct($context);
     }
-
 
     /**
      * Load the page defined
@@ -28,7 +32,7 @@ class WayforpaySuccess extends Action
     public function execute()
     {
         //load model
-		
+
         /* @var $paymentMethod \Magento\Authorizenet\Model\DirectPost */
         $paymentMethod = $this->_objectManager->create('Wayforpay\Payment\Model\Wayforpay');
 
@@ -36,7 +40,7 @@ class WayforpaySuccess extends Action
         $data = $this->getRequest()->getPostValue();
         if (empty($data)) {
             $callback = json_decode(file_get_contents("php://input"));
-            $data = array();
+            $data = [];
             foreach ($callback as $key => $val) {
                 $data[$key] = $val;
             }
@@ -44,8 +48,10 @@ class WayforpaySuccess extends Action
 
         $response = $paymentMethod->processResponse($data);
 //        return $this->resultPageFactory->create()->setPath('checkout/cart');
-	    if ($response) $this->_redirect('checkout/onepage/success');
-	    else $this->_redirect('checkout/onepage/failure');
+        if ($response) {
+            $this->_redirect('checkout/onepage/success');
+        } else {
+            $this->_redirect('checkout/onepage/failure');
+        }
     }
-
 }
