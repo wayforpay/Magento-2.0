@@ -8,6 +8,7 @@ use Magento\Sales\Model\Order\Payment\Transaction;
 
 /**
  * Class Wayforpay
+ *
  * @package Wayforpay\Payment\Model
  */
 class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
@@ -19,35 +20,37 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     const ORDER_SEPARATOR = '#';
 
     /** @var array */
-    protected $keysForResponseSignature = [
-        'merchantAccount',
-        'orderReference',
-        'amount',
-        'currency',
-        'authCode',
-        'cardPan',
-        'transactionStatus',
-        'reasonCode'
-    ];
+    protected $keysForResponseSignature
+        = [
+            'merchantAccount',
+            'orderReference',
+            'amount',
+            'currency',
+            'authCode',
+            'cardPan',
+            'transactionStatus',
+            'reasonCode'
+        ];
 
     /** @var array */
-    protected $keysForSignature = [
-        'merchantAccount',
-        'merchantDomainName',
-        'orderReference',
-        'orderDate',
-        'amount',
-        'currency',
-        'productName',
-        'productCount',
-        'productPrice'
-    ];
+    protected $keysForSignature
+        = [
+            'merchantAccount',
+            'merchantDomainName',
+            'orderReference',
+            'orderDate',
+            'amount',
+            'currency',
+            'productName',
+            'productCount',
+            'productPrice'
+        ];
 
     /**
      * @var bool
      */
     protected $_isInitializeNeeded = true;
-    protected $_isGateway = true;
+    protected $_isGateway          = true;
     /**
      * Payment code
      *
@@ -77,6 +80,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
 
     /**
      * Wayforpay constructor.
+     *
      * @param \Magento\Framework\Model\Context                             $context
      * @param \Magento\Framework\Registry                                  $registry
      * @param \Magento\Framework\Api\ExtensionAttributesFactory            $extensionFactory
@@ -112,10 +116,10 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     ) {
-        $this->orderFactory = $orderFactory;
-        $this->urlBuilder = $urlBuilder;
+        $this->orderFactory        = $orderFactory;
+        $this->urlBuilder          = $urlBuilder;
         $this->_transactionBuilder = $builderInterface;
-        $this->_encryptor = $encryptor;
+        $this->_encryptor          = $encryptor;
         parent::__construct(
             $context,
             $registry,
@@ -128,7 +132,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
             $resourceCollection,
             $data
         );
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/wayforpay.log');
+        $writer        = new \Zend\Log\Writer\Stream(BP . '/var/log/wayforpay.log');
         $this->_logger = new \Zend\Log\Logger();
         $this->_logger->addWriter($writer);
         $this->_gateUrl = 'https://secure.wayforpay.com/pay';
@@ -272,7 +276,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function getPostData($orderId)
     {
-        $order = $this->getOrder($orderId);
+        $order  = $this->getOrder($orderId);
         $amount = $this->getAmount($orderId);
 
         $fields = [
@@ -292,15 +296,15 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
 
         $cartItems = $order->getAllVisibleItems();
 
-        $productNames = [];
-        $productQty = [];
+        $productNames  = [];
+        $productQty    = [];
         $productPrices = [];
         foreach ($cartItems as $_item) {
-            $productNames[] = $_item->getName();
+            $productNames[]  = $_item->getName();
             $productPrices[] = round($_item->getPrice(), 2);
-            $productQty[] = (int)$_item->getQtyOrdered();
+            $productQty[]    = (int)$_item->getQtyOrdered();
         }
-        $fields['productName'] = $productNames;
+        $fields['productName']  = $productNames;
         $fields['productPrice'] = $productPrices;
         $fields['productCount'] = $productQty;
 
@@ -315,10 +319,10 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
         }
 
         $fields['clientFirstName'] = $order->getCustomerFirstname();
-        $fields['clientLastName'] = $order->getCustomerLastname();
-        $fields['clientEmail'] = $order->getCustomerEmail();
-        $fields['clientPhone'] = $phone;
-        $fields['clientCity'] = $order->getBillingAddress()->getCity();
+        $fields['clientLastName']  = $order->getCustomerLastname();
+        $fields['clientEmail']     = $order->getCustomerEmail();
+        $fields['clientPhone']     = $phone;
+        $fields['clientCity']      = $order->getBillingAddress()->getCity();
 
         $fields['merchantSignature'] = $this->getRequestSignature($fields);
 
@@ -347,14 +351,19 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
     public function processResponse($responseData)
     {
         if (empty($responseData)) {
-            $callback = json_decode(file_get_contents("php://input"));
+            $callback     = json_decode(file_get_contents("php://input"));
             $responseData = [];
-            foreach ($callback as $key => $val) {
-                $responseData[$key] = $val;
+            if (!empty($callback)) {
+                foreach ($callback as $key => $val) {
+                    $responseData[$key] = $val;
+                }
             }
         }
         $debugData = ['response' => $responseData];
         $this->_logger->debug("processResponse", $debugData);
+        if (empty($responseData['orderReference'])) {
+            return false;
+        }
 
         list($orderId, ) = explode(self::ORDER_SEPARATOR, $responseData['orderReference']);
         $order = $this->getOrder($orderId);
@@ -444,7 +453,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
 
             $message = __('The authorized amount is %1.', $formatedPrice);
             //get the object of builder class
-            $trans = $this->_transactionBuilder;
+            $trans       = $this->_transactionBuilder;
             $transaction = $trans->setPayment($payment)
                 ->setOrder($order)
                 ->setTransactionId($paymentData['orderReference'])
@@ -470,14 +479,14 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
 
     private function sendAnswerToGateway($orderReference)
     {
-        $time = time();
-        $responseToGateway = [
+        $time                           = time();
+        $responseToGateway              = [
             'orderReference' => $orderReference,
             'status'         => 'accept',
             'time'           => $time
         ];
-        $sign = implode(self::SIGNATURE_SEPARATOR, $responseToGateway);
-        $sign = hash_hmac('md5', $sign, $this->getConfigData('secret_key'));
+        $sign                           = implode(self::SIGNATURE_SEPARATOR, $responseToGateway);
+        $sign                           = hash_hmac('md5', $sign, $this->getConfigData('secret_key'));
         $responseToGateway['signature'] = $sign;
 
         echo json_encode($responseToGateway);
