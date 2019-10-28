@@ -2,8 +2,10 @@
 
 namespace Wayforpay\Payment\Controller\Url;
 
+use Magento\Authorizenet\Model\DirectPost;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\View\Result\Page;
 use Magento\Framework\View\Result\PageFactory;
 
 /**
@@ -27,13 +29,13 @@ class WayforpaySuccess extends Action
     /**
      * Load the page defined
      *
-     * @return \Magento\Framework\View\Result\Page
+     * @return Page
      */
     public function execute()
     {
         //load model
 
-        /* @var $paymentMethod \Magento\Authorizenet\Model\DirectPost */
+        /* @var $paymentMethod DirectPost */
         $paymentMethod = $this->_objectManager->create('Wayforpay\Payment\Model\Wayforpay');
 
         //get request data
