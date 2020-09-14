@@ -233,7 +233,7 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected function isCarrierAllowed($shippingMethod)
     {
-        return strpos($this->getConfigData('allowed_carrier'), $shippingMethod) !== false;
+        return strpos(strval($this->getConfigData('allowed_carrier')), strval($shippingMethod)) !== false;
     }
 
     /**
