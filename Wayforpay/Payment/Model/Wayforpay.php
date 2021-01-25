@@ -399,8 +399,11 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
                     ->setState($this->getConfigData("order_status"))
                     ->setStatus($order->getConfig()->getStateDefaultStatus(Order::STATE_PAYMENT_REVIEW))
                     ->save();
-
-                $this->sendAnswerToGateway($response['orderReference']);
+                
+                if (!isset($_POST['merchantAccount'])) {// this is service request
+                    $this->sendAnswerToGateway($response['orderReference']);
+                }
+                
                 $this->_logger->debug("_processOrder: order state changed: STATE_PROCESSING");
                 $this->_logger->debug("_processOrder: order data saved, order OK");
             } else {
