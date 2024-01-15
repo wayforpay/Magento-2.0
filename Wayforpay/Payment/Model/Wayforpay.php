@@ -412,6 +412,10 @@ class Wayforpay extends \Magento\Payment\Model\Method\AbstractMethod
                     ->setStatus($order->getConfig()->getStateDefaultStatus(Order::STATE_CANCELED))
                     ->save();
 
+                if (!isset($_POST['merchantAccount'])) {// this is service request
+                    $this->sendAnswerToGateway($response['orderReference']);
+                }
+
                 $this->_logger->debug("_processOrder: order state not STATE_CANCELED");
                 $this->_logger->debug("_processOrder: order data saved, order not approved");
             }
