@@ -7,17 +7,39 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\View\Result\Page;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 
 /**
  * Class WayforpaySuccess
  *
  * @package Wayforpay\Payment\Controller\Url
  */
-class WayforpaySuccess extends Action
+class WayforpaySuccess extends Action /* implements CsrfAwareActionInterface*/
 {
     /** @var PageFactory  */
     protected $resultPageFactory;
 
+   /**
+    * @param RequestInterface $request
+    * @return InvalidRequestException|null
+    */
+/*    public function createCsrfValidationException(RequestInterface $request): InvalidRequestException
+    {
+        return null;
+    }
+*/
+    /**
+    * @param RequestInterface $request
+    * @return bool|null
+    */
+/*    public function validateForCsrf(RequestInterface $request): bool
+    {
+        return true;
+    }
+*/
+    
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory
